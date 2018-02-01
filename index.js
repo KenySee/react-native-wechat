@@ -133,6 +133,7 @@ export const getWXAppInstallUrl = wrapApi(WeChat.getWXAppInstallUrl);
  */
 export const getApiVersion = wrapApi(WeChat.getApiVersion);
 
+export const shareToMiniProgram = wrapApi(WeChat.shareToMiniProgram);
 /**
  * Open wechat app
  * @method openWXApp
