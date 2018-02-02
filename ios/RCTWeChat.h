@@ -32,7 +32,7 @@
 #define RCTWXShareImageUrl @"imageUrl"
 
 #define RCTWXEventName @"WeChat_Resp"
-
+UIKIT_EXTERN NSData *UIImagePNGRepresentation(UIImage *image);
 @interface RCTWeChat : NSObject <RCTBridgeModule, WXApiDelegate>
 
 @property NSString* appId;

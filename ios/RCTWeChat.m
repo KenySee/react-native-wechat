@@ -301,7 +301,7 @@ RCT_EXPORT_METHOD(pay:(NSDictionary *)data
             wxMinibject.webpageUrl = webpageUrl;    //兼容低版本的网页链接
             wxMinibject.userName = userName;        //小程序的原始ID
             wxMinibject.path = path;                //小程序的页面路径
-            wxMinibject.hdImageData = aThumbImage;
+            wxMinibject.hdImageData = nil;//UIImagePNGRepresentation(aThumbImage);
             
             [self shareToWeixinWithMediaMessage:aScene
                                           Title:title
