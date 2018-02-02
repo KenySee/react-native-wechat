@@ -189,31 +189,6 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
         _share(SendMessageToWX.Req.WXSceneFavorite, data, callback);
     }
     @ReactMethod
-    public void shareToMiniProgram(Callback callback) {
-        if (api == null) {
-            callback.invoke(NOT_REGISTERED);
-            return;
-        }
-        WXMiniProgramObject miniProgram = new WXMiniProgramObject();
-        //低版本微信打开 URL
-        miniProgram.webpageUrl = "http://h5shop.zallhy.com/zt/show1.html";
-        //跳转的小程序的原始 ID
-        miniProgram.userName = "wx9948d79c8b1eaeb5";
-        //小程序的 Path
-        miniProgram.path = "pages/home/article/details?id=932795954278522880";
-        WXMediaMessage msg = new WXMediaMessage(miniProgram);
-        msg.title = "艺术品鉴生活";
-        msg.description = "汉艺网";
-        Bitmap bmp = getBitmap("https://image.zallhy.com/9e4165bb296c414d84cd29d2fcc29e0c?imageView/2/h/120");
-        Bitmap thumBmp = Bitmap.createScaledBitmap(bmp,150,150,true);
-        msg.setThumbImage(thumBmp);
-        SendMessageToWX.Req req = new SendMessageToWX.Req();
-        req.message = msg;
-        req.transaction = buildTransaction("webPage");
-        req.scene = SendMessageToWX.Req.WXSceneSession;
-        callback.invoke(null, api.sendReq(req));
-    }
-    @ReactMethod
     public void pay(ReadableMap data, Callback callback){
         PayReq payReq = new PayReq();
         if (data.hasKey("partnerId")) {
@@ -243,9 +218,17 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
 
     private void _share(final int scene, final ReadableMap data, final Callback callback) {
         Uri uri = null;
+        String imageUrl = null;
+        int width = 150,height = 150;
         if (data.hasKey("thumbImage")) {
-            String imageUrl = data.getString("thumbImage");
-
+            imageUrl = data.getString("thumbImage");
+        }
+        if (data.hasKey("hdImageUrl")){
+            imageUrl = data.getString("hdImageUrl");
+            width = 400;
+            height = 500;
+        }
+        if (imageUrl != null) {
             try {
                 uri = Uri.parse(imageUrl);
                 // Verify scheme is set, so that relative uri (used by static resources) are not handled.
@@ -257,7 +240,7 @@ public class WeChatModule extends ReactContextBaseJavaModule implements IWXAPIEv
             }
         }
         if (uri != null) {
-            this._getImage(uri, new ResizeOptions(100, 100), new ImageCallback() {
+            this._getImage(uri, new ResizeOptions(width, height), new ImageCallback() {
                 @Override
                 public void invoke(@Nullable Bitmap bitmap) {
                     WeChatModule.this._share(scene, data, bitmap, callback);

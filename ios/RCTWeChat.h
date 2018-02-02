@@ -9,10 +9,12 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "RCTBridgeModule.h"
+#import <React/RCTBridgeModule.h>
 #import "WXApi.h"
 
 // define share type constants
+#define RCTWXShareTypeMini @"mini"
+#define RCTWXShareTypeHDImageUrl @"hdImageUrl"
 #define RCTWXShareTypeNews @"news"
 #define RCTWXShareTypeThumbImageUrl @"thumbImage"
 #define RCTWXShareTypeImageUrl @"imageUrl"

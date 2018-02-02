@@ -66,12 +66,12 @@ RCT_EXPORT_METHOD(registerApp:(NSString *)appid
     callback(@[[WXApi registerApp:appid] ? [NSNull null] : INVOKE_FAILED]);
 }
 
-RCT_EXPORT_METHOD(registerAppWithDescription:(NSString *)appid
-                  :(NSString *)appdesc
-                  :(RCTResponseSenderBlock)callback)
-{
-    callback(@[[WXApi registerApp:appid withDescription:appdesc] ? [NSNull null] : INVOKE_FAILED]);
-}
+//RCT_EXPORT_METHOD(registerAppWithDescription:(NSString *)appid
+//                  :(NSString *)appdesc
+//                  :(RCTResponseSenderBlock)callback)
+//{
+//    callback(@[[WXApi registerApp:appid withDescription:appdesc] ? [NSNull null] : INVOKE_FAILED]);
+//}
 
 RCT_EXPORT_METHOD(isWXAppInstalled:(RCTResponseSenderBlock)callback)
 {
@@ -285,6 +285,34 @@ RCT_EXPORT_METHOD(pay:(NSDictionary *)data
                                        MediaTag:mediaTagName
                                        callBack:callback];
 
+        } else if ([type isEqualToString:RCTWXShareTypeMini]) {
+            NSString * webpageUrl = aData[RCTWXShareWebpageUrl];
+            NSString * path = aData[@"path"];
+            if (path.length <= 0) {
+                callback(@[@"path required"]);
+                return;
+            }
+            NSString * userName = aData[@"userName"];
+            if (userName.length <= 0) {
+                callback(@[@"userName required"]);
+                return;
+            }
+            WXMiniProgramObject* wxMinibject = [WXMiniProgramObject object];
+            wxMinibject.webpageUrl = webpageUrl;    //兼容低版本的网页链接
+            wxMinibject.userName = userName;        //小程序的原始ID
+            wxMinibject.path = path;                //小程序的页面路径
+            wxMinibject.hdImageData = aThumbImage;
+            
+            [self shareToWeixinWithMediaMessage:aScene
+                                          Title:title
+                                    Description:description
+                                         Object:wxMinibject
+                                     MessageExt:messageExt
+                                  MessageAction:messageAction
+                                     ThumbImage:aThumbImage
+                                       MediaTag:mediaTagName
+                                       callBack:callback];
+            
         } else {
             callback(@[@"message type unsupported"]);
         }
@@ -295,14 +323,24 @@ RCT_EXPORT_METHOD(pay:(NSDictionary *)data
 - (void)shareToWeixinWithData:(NSDictionary *)aData scene:(int)aScene callback:(RCTResponseSenderBlock)aCallBack
 {
     NSString *imageUrl = aData[RCTWXShareTypeThumbImageUrl];
-    if (imageUrl.length && _bridge.imageLoader) {
+    NSString *hdImageUrl = aData[RCTWXShareTypeHDImageUrl];
+    if (hdImageUrl.length && _bridge.imageLoader) {
+        NSURL *url = [NSURL URLWithString:hdImageUrl];
+        NSURLRequest *imageRequest = [NSURLRequest requestWithURL:url];
+        [_bridge.imageLoader loadImageWithURLRequest:imageRequest size:CGSizeMake(400, 500) scale:1 clipped:FALSE resizeMode:RCTResizeModeStretch progressBlock:nil partialLoadBlock:nil
+                                     completionBlock:^(NSError *error, UIImage *image) {
+                                         [self shareToWeixinWithData:aData thumbImage:image scene:aScene callBack:aCallBack];
+                                     }];
+    }
+    else if (imageUrl.length && _bridge.imageLoader) {
         NSURL *url = [NSURL URLWithString:imageUrl];
         NSURLRequest *imageRequest = [NSURLRequest requestWithURL:url];
         [_bridge.imageLoader loadImageWithURLRequest:imageRequest size:CGSizeMake(100, 100) scale:1 clipped:FALSE resizeMode:RCTResizeModeStretch progressBlock:nil partialLoadBlock:nil
-            completionBlock:^(NSError *error, UIImage *image) {
-            [self shareToWeixinWithData:aData thumbImage:image scene:aScene callBack:aCallBack];
-        }];
-    } else {
+                                     completionBlock:^(NSError *error, UIImage *image) {
+                                         [self shareToWeixinWithData:aData thumbImage:image scene:aScene callBack:aCallBack];
+                                     }];
+    }
+    else {
         [self shareToWeixinWithData:aData thumbImage:nil scene:aScene callBack:aCallBack];
     }
 
